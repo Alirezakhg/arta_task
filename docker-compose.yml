@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: shared_db
+      POSTGRES_USER: shared_user
+      POSTGRES_PASSWORD: 654321
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  jwt_builder:
+    build:
+      context: ./jwt_builder/jwt_builder
+    environment:
+      DATABASE_URL: postgres://shared_user:654321@db/shared_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  jwt_consumer:
+    build:
+      context: ./jwt_consumer/jwt_consumer
+    environment:
+      DATABASE_URL: postgres://shared_user:654321@db/shared_db
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
